@@ -1,0 +1,177 @@
+{
+  "id": "C03",
+  "category": "空值处理错误",
+  "title": "拼接姓名时未处理 None 空值",
+  "problem_description": "函数 full_name(first, last) 应将名字与姓氏拼接，缺失的部分（None）视为空字符串并去掉多余空格。原始代码直接对参数调用 .strip()，当任一参数为 None 时抛出 AttributeError。",
+  "original_code": "def full_name(first, last):\n    return first.strip() + \" \" + last.strip()\n",
+  "bug_cause": "未对 None 做归一化处理，None 没有 strip 方法导致 AttributeError；即使不是 None，简单拼接也会在某一部分为空时留下多余空格。",
+  "fix_requirement": "使用 (value or \"\").strip() 归一化两个参数，拼接后再整体 strip，保证 None 与空字符串都得到合理结果。",
+  "ai_repair_process": {
+    "performed_by": "本次由 AI 辅助完成定位与修复（CodeBuddy Code 执行分析与改写）",
+    "analysis_steps": [
+      "识别原始代码对两个参数都直接调用 .strip()，推断 None 输入会触发 AttributeError。",
+      "明确需求：缺失部分按空字符串处理，且结果不留首尾空格。",
+      "确认非空输入的正常路径需保持原样。"
+    ],
+    "fix_steps": [
+      "引入 (first or \"\").strip() 与 (last or \"\").strip() 完成空值归一化。",
+      "对拼接结果整体 strip 以消除边界空格。"
+    ],
+    "retest_steps": [
+      "通过真实独立子进程运行三组用例：均非空、last 为 None、first 为 None。",
+      "比对返回值，确认空值用例修复前报错、修复后返回预期字符串。",
+      "确认修复代码全部通过。"
+    ],
+    "transcript_statement": "未保存模型对话原文，不提供虚构的对话记录。"
+  },
+  "fixed_code": "def full_name(first, last):\n    first = (first or \"\").strip()\n    last = (last or \"\").strip()\n    return (first + \" \" + last).strip()\n",
+  "test_cases": [
+    {
+      "name": "both_present",
+      "args": [
+        "Ada",
+        "Lovelace"
+      ],
+      "expected": "Ada Lovelace",
+      "timeout_ms": 2000
+    },
+    {
+      "name": "last_is_none",
+      "args": [
+        "Ada",
+        null
+      ],
+      "expected": "Ada",
+      "timeout_ms": 2000
+    },
+    {
+      "name": "first_is_none",
+      "args": [
+        null,
+        "Lovelace"
+      ],
+      "expected": "Lovelace",
+      "timeout_ms": 2000
+    }
+  ],
+  "pre_fix_results": {
+    "passed": 1,
+    "total": 3,
+    "all_passed": false,
+    "note": "由 scripts/run_cases.py 调用 本仓库 executor/executor.py（与 CodeEval Lab 同源） 的 run_case 在独立子进程真实执行后生成",
+    "cases": [
+      {
+        "name": "both_present",
+        "args": [
+          "Ada",
+          "Lovelace"
+        ],
+        "expected": "Ada Lovelace",
+        "actual": "Ada Lovelace",
+        "passed": true,
+        "ok": true,
+        "error": "",
+        "error_type": "",
+        "timed_out": false,
+        "runtime_ms": 2,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "last_is_none",
+        "args": [
+          "Ada",
+          null
+        ],
+        "expected": "Ada",
+        "actual": null,
+        "passed": false,
+        "ok": false,
+        "error": "'NoneType' object has no attribute 'strip'",
+        "error_type": "AttributeError",
+        "timed_out": false,
+        "runtime_ms": 10,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "first_is_none",
+        "args": [
+          null,
+          "Lovelace"
+        ],
+        "expected": "Lovelace",
+        "actual": null,
+        "passed": false,
+        "ok": false,
+        "error": "'NoneType' object has no attribute 'strip'",
+        "error_type": "AttributeError",
+        "timed_out": false,
+        "runtime_ms": 10,
+        "stdout": "",
+        "stderr": ""
+      }
+    ]
+  },
+  "post_fix_results": {
+    "passed": 3,
+    "total": 3,
+    "all_passed": true,
+    "note": "由 scripts/run_cases.py 调用 本仓库 executor/executor.py（与 CodeEval Lab 同源） 的 run_case 在独立子进程真实执行后生成",
+    "cases": [
+      {
+        "name": "both_present",
+        "args": [
+          "Ada",
+          "Lovelace"
+        ],
+        "expected": "Ada Lovelace",
+        "actual": "Ada Lovelace",
+        "passed": true,
+        "ok": true,
+        "error": "",
+        "error_type": "",
+        "timed_out": false,
+        "runtime_ms": 2,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "last_is_none",
+        "args": [
+          "Ada",
+          null
+        ],
+        "expected": "Ada",
+        "actual": "Ada",
+        "passed": true,
+        "ok": true,
+        "error": "",
+        "error_type": "",
+        "timed_out": false,
+        "runtime_ms": 2,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "first_is_none",
+        "args": [
+          null,
+          "Lovelace"
+        ],
+        "expected": "Lovelace",
+        "actual": "Lovelace",
+        "passed": true,
+        "ok": true,
+        "error": "",
+        "error_type": "",
+        "timed_out": false,
+        "runtime_ms": 2,
+        "stdout": "",
+        "stderr": ""
+      }
+    ]
+  },
+  "manual_review": "人工审查确认：归一化写法简洁，None 与空字符串等价处理符合语义；整体 strip 消除多余空格；对正常输入无回归影响。",
+  "final_evaluation": "修复有效。原始代码在两个 None 用例上抛出 AttributeError（失败 2/3），修复代码 3/3 通过。展示了空值防御的必要性。"
+}

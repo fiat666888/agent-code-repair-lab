@@ -1,0 +1,267 @@
+{
+  "id": "C02",
+  "category": "边界条件错误",
+  "title": "取末尾 N 个元素时 n=0 的边界错误",
+  "problem_description": "函数 last_n(items, n) 应返回列表 items 的最后 n 个元素。当 n=0 时应返回空列表；当 n 大于列表长度时应返回整个列表。原始代码直接使用负索引切片 items[-n:]，n=0 时 -0 等于 0，切片退化为整个列表。",
+  "original_code": "def last_n(items, n):\n    return items[-n:]\n",
+  "bug_cause": "Python 中 -0 == 0，因此 items[-0:] 等价于 items[0:]，返回全部元素而非空列表。缺少对 n <= 0 的边界显式处理。",
+  "fix_requirement": "在切片前显式判断 n，当 n 为 None 或 n <= 0 时直接返回 []；n 大于长度时由 Python 切片天然返回整个列表，保持不变。",
+  "ai_repair_process": {
+    "performed_by": "本次由 AI 辅助完成定位与修复（CodeBuddy Code 执行分析与改写）",
+    "analysis_steps": [
+      "解析题目对 n=0 与 n>len 两种边界的预期行为。",
+      "在脑内推演 items[-n:] 在 n=0 时等价于 items[0:]，确认与预期不符。",
+      "判断 n>len 的切片行为已正确，无需改动。"
+    ],
+    "fix_steps": [
+      "增加 n is None 或 n <= 0 时返回空列表的前置判断。",
+      "保留原有切片语句处理正数 n。"
+    ],
+    "retest_steps": [
+      "通过真实独立子进程执行 n=2、n=0、n=10 三组用例。",
+      "比对实际输出与 expected，重点观察 n=0 用例修复前后的差异。",
+      "确认原始代码存在失败用例、修复代码全部通过。"
+    ],
+    "transcript_statement": "未保存模型对话原文，不提供虚构的对话记录。"
+  },
+  "fixed_code": "def last_n(items, n):\n    if n is None or n <= 0:\n        return []\n    return items[-n:]\n",
+  "test_cases": [
+    {
+      "name": "normal_two",
+      "args": [
+        [
+          1,
+          2,
+          3,
+          4
+        ],
+        2
+      ],
+      "expected": [
+        3,
+        4
+      ],
+      "timeout_ms": 2000
+    },
+    {
+      "name": "zero_boundary",
+      "args": [
+        [
+          1,
+          2,
+          3,
+          4
+        ],
+        0
+      ],
+      "expected": [],
+      "timeout_ms": 2000
+    },
+    {
+      "name": "larger_than_length",
+      "args": [
+        [
+          1,
+          2,
+          3,
+          4
+        ],
+        10
+      ],
+      "expected": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "timeout_ms": 2000
+    }
+  ],
+  "pre_fix_results": {
+    "passed": 2,
+    "total": 3,
+    "all_passed": false,
+    "note": "由 scripts/run_cases.py 调用 本仓库 executor/executor.py（与 CodeEval Lab 同源） 的 run_case 在独立子进程真实执行后生成",
+    "cases": [
+      {
+        "name": "normal_two",
+        "args": [
+          [
+            1,
+            2,
+            3,
+            4
+          ],
+          2
+        ],
+        "expected": [
+          3,
+          4
+        ],
+        "actual": [
+          3,
+          4
+        ],
+        "passed": true,
+        "ok": true,
+        "error": "",
+        "error_type": "",
+        "timed_out": false,
+        "runtime_ms": 2,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "zero_boundary",
+        "args": [
+          [
+            1,
+            2,
+            3,
+            4
+          ],
+          0
+        ],
+        "expected": [],
+        "actual": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "passed": false,
+        "ok": true,
+        "error": "",
+        "error_type": "",
+        "timed_out": false,
+        "runtime_ms": 2,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "larger_than_length",
+        "args": [
+          [
+            1,
+            2,
+            3,
+            4
+          ],
+          10
+        ],
+        "expected": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "actual": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "passed": true,
+        "ok": true,
+        "error": "",
+        "error_type": "",
+        "timed_out": false,
+        "runtime_ms": 2,
+        "stdout": "",
+        "stderr": ""
+      }
+    ]
+  },
+  "post_fix_results": {
+    "passed": 3,
+    "total": 3,
+    "all_passed": true,
+    "note": "由 scripts/run_cases.py 调用 本仓库 executor/executor.py（与 CodeEval Lab 同源） 的 run_case 在独立子进程真实执行后生成",
+    "cases": [
+      {
+        "name": "normal_two",
+        "args": [
+          [
+            1,
+            2,
+            3,
+            4
+          ],
+          2
+        ],
+        "expected": [
+          3,
+          4
+        ],
+        "actual": [
+          3,
+          4
+        ],
+        "passed": true,
+        "ok": true,
+        "error": "",
+        "error_type": "",
+        "timed_out": false,
+        "runtime_ms": 2,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "zero_boundary",
+        "args": [
+          [
+            1,
+            2,
+            3,
+            4
+          ],
+          0
+        ],
+        "expected": [],
+        "actual": [],
+        "passed": true,
+        "ok": true,
+        "error": "",
+        "error_type": "",
+        "timed_out": false,
+        "runtime_ms": 2,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "larger_than_length",
+        "args": [
+          [
+            1,
+            2,
+            3,
+            4
+          ],
+          10
+        ],
+        "expected": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "actual": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "passed": true,
+        "ok": true,
+        "error": "",
+        "error_type": "",
+        "timed_out": false,
+        "runtime_ms": 2,
+        "stdout": "",
+        "stderr": ""
+      }
+    ]
+  },
+  "manual_review": "人工审查确认：前置判断覆盖 n=None 与 n<=0，语义与题目一致；对 n>len 未做多余改动，避免破坏原有正确行为。修改集中且可读。",
+  "final_evaluation": "修复有效。原始代码在 zero_boundary 用例返回 [1,2,3,4]（失败 1/3），修复代码 3/3 通过。体现了切片类边界条件的隐蔽陷阱。"
+}

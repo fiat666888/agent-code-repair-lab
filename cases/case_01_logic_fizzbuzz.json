@@ -1,0 +1,208 @@
+{
+  "id": "C01",
+  "category": "逻辑错误",
+  "title": "FizzBuzz 分支条件逻辑错误（or 误用为 and）",
+  "problem_description": "函数 fizzbuzz_value(n) 应对 3 的倍数返回 Fizz、5 的倍数返回 Buzz、同时是 3 和 5 的倍数返回 FizzBuzz，其余返回数字字符串。原始代码把「同时满足」写成了「满足其一」，导致 3 和 5 的倍数被错误归类为 FizzBuzz。",
+  "original_code": "def fizzbuzz_value(n):\n    if n % 3 == 0 or n % 5 == 0:\n        return \"FizzBuzz\"\n    if n % 3 == 0:\n        return \"Fizz\"\n    if n % 5 == 0:\n        return \"Buzz\"\n    return str(n)\n",
+  "bug_cause": "第一个 if 使用逻辑或（or），使得任意满足 3 或 5 整除条件的数字都先命中 FizzBuzz 分支，后面的 Fizz/Buzz 分支成为死代码。应为逻辑与（and），或先判断 n % 15 == 0。",
+  "fix_requirement": "将第一个条件改为 n % 3 == 0 and n % 5 == 0，使 FizzBuzz 仅在同时整除时返回；保持其余分支不变。",
+  "ai_repair_process": {
+    "performed_by": "本次由 AI 辅助完成定位与修复（CodeBuddy Code 执行分析与改写）",
+    "analysis_steps": [
+      "阅读题目与原始代码，梳理四个返回分支的优先级。",
+      "对照期望：3->Fizz、5->Buzz、15->FizzBuzz，定位首个 if 使用 or 导致分支覆盖错误。",
+      "确认后续 Fizz/Buzz 分支因首个条件过宽而不可达。"
+    ],
+    "fix_steps": [
+      "把首个条件由 or 修改为 and，缩小 FizzBuzz 的命中范围。",
+      "保留其余分支与返回类型，避免引入额外行为变化。"
+    ],
+    "retest_steps": [
+      "使用真实独立子进程执行原始代码与修复代码。",
+      "逐用例比对实际返回值与 expected（3/5/15/7）。",
+      "确认原始代码至少 1 个用例失败、修复代码全部通过。"
+    ],
+    "transcript_statement": "未保存模型对话原文，不提供虚构的对话记录。"
+  },
+  "fixed_code": "def fizzbuzz_value(n):\n    if n % 3 == 0 and n % 5 == 0:\n        return \"FizzBuzz\"\n    if n % 3 == 0:\n        return \"Fizz\"\n    if n % 5 == 0:\n        return \"Buzz\"\n    return str(n)\n",
+  "test_cases": [
+    {
+      "name": "three_only",
+      "args": [
+        3
+      ],
+      "expected": "Fizz",
+      "timeout_ms": 2000
+    },
+    {
+      "name": "five_only",
+      "args": [
+        5
+      ],
+      "expected": "Buzz",
+      "timeout_ms": 2000
+    },
+    {
+      "name": "both_three_and_five",
+      "args": [
+        15
+      ],
+      "expected": "FizzBuzz",
+      "timeout_ms": 2000
+    },
+    {
+      "name": "neither",
+      "args": [
+        7
+      ],
+      "expected": "7",
+      "timeout_ms": 2000
+    }
+  ],
+  "pre_fix_results": {
+    "passed": 2,
+    "total": 4,
+    "all_passed": false,
+    "note": "由 scripts/run_cases.py 调用 本仓库 executor/executor.py（与 CodeEval Lab 同源） 的 run_case 在独立子进程真实执行后生成",
+    "cases": [
+      {
+        "name": "three_only",
+        "args": [
+          3
+        ],
+        "expected": "Fizz",
+        "actual": "FizzBuzz",
+        "passed": false,
+        "ok": true,
+        "error": "",
+        "error_type": "",
+        "timed_out": false,
+        "runtime_ms": 2,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "five_only",
+        "args": [
+          5
+        ],
+        "expected": "Buzz",
+        "actual": "FizzBuzz",
+        "passed": false,
+        "ok": true,
+        "error": "",
+        "error_type": "",
+        "timed_out": false,
+        "runtime_ms": 2,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "both_three_and_five",
+        "args": [
+          15
+        ],
+        "expected": "FizzBuzz",
+        "actual": "FizzBuzz",
+        "passed": true,
+        "ok": true,
+        "error": "",
+        "error_type": "",
+        "timed_out": false,
+        "runtime_ms": 2,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "neither",
+        "args": [
+          7
+        ],
+        "expected": "7",
+        "actual": "7",
+        "passed": true,
+        "ok": true,
+        "error": "",
+        "error_type": "",
+        "timed_out": false,
+        "runtime_ms": 2,
+        "stdout": "",
+        "stderr": ""
+      }
+    ]
+  },
+  "post_fix_results": {
+    "passed": 4,
+    "total": 4,
+    "all_passed": true,
+    "note": "由 scripts/run_cases.py 调用 本仓库 executor/executor.py（与 CodeEval Lab 同源） 的 run_case 在独立子进程真实执行后生成",
+    "cases": [
+      {
+        "name": "three_only",
+        "args": [
+          3
+        ],
+        "expected": "Fizz",
+        "actual": "Fizz",
+        "passed": true,
+        "ok": true,
+        "error": "",
+        "error_type": "",
+        "timed_out": false,
+        "runtime_ms": 2,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "five_only",
+        "args": [
+          5
+        ],
+        "expected": "Buzz",
+        "actual": "Buzz",
+        "passed": true,
+        "ok": true,
+        "error": "",
+        "error_type": "",
+        "timed_out": false,
+        "runtime_ms": 2,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "both_three_and_five",
+        "args": [
+          15
+        ],
+        "expected": "FizzBuzz",
+        "actual": "FizzBuzz",
+        "passed": true,
+        "ok": true,
+        "error": "",
+        "error_type": "",
+        "timed_out": false,
+        "runtime_ms": 2,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "neither",
+        "args": [
+          7
+        ],
+        "expected": "7",
+        "actual": "7",
+        "passed": true,
+        "ok": true,
+        "error": "",
+        "error_type": "",
+        "timed_out": false,
+        "runtime_ms": 2,
+        "stdout": "",
+        "stderr": ""
+      }
+    ]
+  },
+  "manual_review": "人工审查确认：修复仅把逻辑或改为逻辑与，分支顺序合理；入口函数签名与返回类型未变；未引入对异常输入的额外假设。属于最小必要修改，通过代码审查。",
+  "final_evaluation": "修复有效。原始代码在 three_only、five_only 用例上返回错误值（失败 2/4），修复代码 4/4 通过。该案例验证了分支条件逻辑错误的定位与修复。"
+}

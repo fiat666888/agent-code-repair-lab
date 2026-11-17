@@ -1,0 +1,168 @@
+{
+  "id": "C05",
+  "category": "异常处理错误",
+  "title": "解析配置整数未捕获异常",
+  "problem_description": "函数 parse_config_int(text) 应把配置字符串解析为整数；当输入无法解析（非数字、含小数点等）时应返回默认值 0，而不是让异常向外扩散导致调用方崩溃。原始代码直接调用 int(text)。",
+  "original_code": "def parse_config_int(text):\n    return int(text)\n",
+  "bug_cause": "缺少异常处理：int() 在遇到非数字字符串时抛 ValueError，遇到 None 时抛 TypeError，未按要求降级为默认值。",
+  "fix_requirement": "用 try/except 包裹 int(text)，捕获 (TypeError, ValueError) 并返回 0；合法输入保持原解析结果。",
+  "ai_repair_process": {
+    "performed_by": "本次由 AI 辅助完成定位与修复（CodeBuddy Code 执行分析与改写）",
+    "analysis_steps": [
+      "对照需求确认非法输入应返回 0 而非抛出异常。",
+      "识别 int() 在 'abc' 上抛 ValueError、在 '3.14' 上同样抛 ValueError。",
+      "判断需要用 try/except 建立降级路径。"
+    ],
+    "fix_steps": [
+      "增加 try/except (TypeError, ValueError) 结构。",
+      "异常分支返回默认值 0，成功分支返回 int(text)。"
+    ],
+    "retest_steps": [
+      "通过真实独立子进程运行合法数字、非数字、带小数点三组用例。",
+      "比对返回值，确认修复前非法输入报错、修复后返回 0。",
+      "确认修复代码全部通过。"
+    ],
+    "transcript_statement": "未保存模型对话原文，不提供虚构的对话记录。"
+  },
+  "fixed_code": "def parse_config_int(text):\n    try:\n        return int(text)\n    except (TypeError, ValueError):\n        return 0\n",
+  "test_cases": [
+    {
+      "name": "valid_integer",
+      "args": [
+        "42"
+      ],
+      "expected": 42,
+      "timeout_ms": 2000
+    },
+    {
+      "name": "non_numeric",
+      "args": [
+        "abc"
+      ],
+      "expected": 0,
+      "timeout_ms": 2000
+    },
+    {
+      "name": "decimal_string",
+      "args": [
+        "3.14"
+      ],
+      "expected": 0,
+      "timeout_ms": 2000
+    }
+  ],
+  "pre_fix_results": {
+    "passed": 1,
+    "total": 3,
+    "all_passed": false,
+    "note": "由 scripts/run_cases.py 调用 本仓库 executor/executor.py（与 CodeEval Lab 同源） 的 run_case 在独立子进程真实执行后生成",
+    "cases": [
+      {
+        "name": "valid_integer",
+        "args": [
+          "42"
+        ],
+        "expected": 42,
+        "actual": 42,
+        "passed": true,
+        "ok": true,
+        "error": "",
+        "error_type": "",
+        "timed_out": false,
+        "runtime_ms": 2,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "non_numeric",
+        "args": [
+          "abc"
+        ],
+        "expected": 0,
+        "actual": null,
+        "passed": false,
+        "ok": false,
+        "error": "invalid literal for int() with base 10: 'abc'",
+        "error_type": "ValueError",
+        "timed_out": false,
+        "runtime_ms": 10,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "decimal_string",
+        "args": [
+          "3.14"
+        ],
+        "expected": 0,
+        "actual": null,
+        "passed": false,
+        "ok": false,
+        "error": "invalid literal for int() with base 10: '3.14'",
+        "error_type": "ValueError",
+        "timed_out": false,
+        "runtime_ms": 11,
+        "stdout": "",
+        "stderr": ""
+      }
+    ]
+  },
+  "post_fix_results": {
+    "passed": 3,
+    "total": 3,
+    "all_passed": true,
+    "note": "由 scripts/run_cases.py 调用 本仓库 executor/executor.py（与 CodeEval Lab 同源） 的 run_case 在独立子进程真实执行后生成",
+    "cases": [
+      {
+        "name": "valid_integer",
+        "args": [
+          "42"
+        ],
+        "expected": 42,
+        "actual": 42,
+        "passed": true,
+        "ok": true,
+        "error": "",
+        "error_type": "",
+        "timed_out": false,
+        "runtime_ms": 2,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "non_numeric",
+        "args": [
+          "abc"
+        ],
+        "expected": 0,
+        "actual": 0,
+        "passed": true,
+        "ok": true,
+        "error": "",
+        "error_type": "",
+        "timed_out": false,
+        "runtime_ms": 2,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "decimal_string",
+        "args": [
+          "3.14"
+        ],
+        "expected": 0,
+        "actual": 0,
+        "passed": true,
+        "ok": true,
+        "error": "",
+        "error_type": "",
+        "timed_out": false,
+        "runtime_ms": 2,
+        "stdout": "",
+        "stderr": ""
+      }
+    ]
+  },
+  "manual_review": "人工审查确认：捕获的异常类型覆盖 int() 的常见失败情形；返回类型始终为 int，接口稳定；未过度捕获 Exception，避免掩盖无关错误。",
+  "final_evaluation": "修复有效。原始代码在 non_numeric、decimal_string 上抛 ValueError（失败 2/3），修复代码 3/3 通过。展示了异常降级处理的正确做法。"
+}

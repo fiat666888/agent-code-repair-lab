@@ -1,0 +1,101 @@
+{
+  "id": "C08",
+  "category": "SQL查询问题",
+  "title": "sqlite3 成年用户查询边界条件 > 误用为 >=",
+  "problem_description": "函数 get_adult_names() 使用 Python sqlite3 内存库，查询 age >= 18 的成年用户姓名并按姓名排序。原始 SQL 写成 age > 18，恰好 18 岁的用户被漏掉。需通过真实查询比较修复前后的结果集。",
+  "original_code": "def get_adult_names():\n    import sqlite3\n    conn = sqlite3.connect(':memory:')\n    conn.execute('CREATE TABLE users (id INTEGER, name TEXT, age INTEGER)')\n    conn.executemany('INSERT INTO users VALUES (?, ?, ?)', [(1, 'Alice', 30), (2, 'Bob', 17), (3, 'Carol', 25), (4, 'Dave', 18)])\n    rows = conn.execute('SELECT name FROM users WHERE age > 18 ORDER BY name').fetchall()\n    conn.close()\n    return [r[0] for r in rows]\n",
+  "bug_cause": "错误 SQL 使用严格大于 age > 18，导致 18 岁的 Dave 被排除；正确语义应为 age >= 18。此为查询条件边界错误，真实改变了结果行。",
+  "fix_requirement": "把 SQL 中的 age > 18 改为 age >= 18，其余建表、插入、排序与连接管理保持不变，使查询结果包含恰好 18 岁的用户。",
+  "ai_repair_process": {
+    "performed_by": "本次由 AI 辅助完成定位与修复（CodeBuddy Code 执行分析与改写）",
+    "analysis_steps": [
+      "读取题目「成年 = age >= 18」与数据中 Dave=18 这一边界样本。",
+      "检查原始 SQL 使用 age > 18，推断 Dave 会被过滤掉。",
+      "确认 ORDER BY 与连接关闭逻辑正确，无需改动。"
+    ],
+    "fix_steps": [
+      "仅将 SQL 条件由 > 改为 >=。",
+      "保持 sqlite3 内存库的建表与参数化插入不变。"
+    ],
+    "retest_steps": [
+      "通过真实独立子进程执行原始与修复代码，sqlite3 在子进程临时目录内正常运行。",
+      "比对返回姓名列表：修复前为 ['Alice','Carol']，修复后应含 'Dave'。",
+      "确认修复代码全部通过。"
+    ],
+    "transcript_statement": "未保存模型对话原文，不提供虚构的对话记录。"
+  },
+  "fixed_code": "def get_adult_names():\n    import sqlite3\n    conn = sqlite3.connect(':memory:')\n    conn.execute('CREATE TABLE users (id INTEGER, name TEXT, age INTEGER)')\n    conn.executemany('INSERT INTO users VALUES (?, ?, ?)', [(1, 'Alice', 30), (2, 'Bob', 17), (3, 'Carol', 25), (4, 'Dave', 18)])\n    rows = conn.execute('SELECT name FROM users WHERE age >= 18 ORDER BY name').fetchall()\n    conn.close()\n    return [r[0] for r in rows]\n",
+  "test_cases": [
+    {
+      "name": "adult_names_includes_18",
+      "args": [],
+      "expected": [
+        "Alice",
+        "Carol",
+        "Dave"
+      ],
+      "timeout_ms": 2000
+    }
+  ],
+  "pre_fix_results": {
+    "passed": 0,
+    "total": 1,
+    "all_passed": false,
+    "note": "由 scripts/run_cases.py 调用 本仓库 executor/executor.py（与 CodeEval Lab 同源） 的 run_case 在独立子进程真实执行后生成",
+    "cases": [
+      {
+        "name": "adult_names_includes_18",
+        "args": [],
+        "expected": [
+          "Alice",
+          "Carol",
+          "Dave"
+        ],
+        "actual": [
+          "Alice",
+          "Carol"
+        ],
+        "passed": false,
+        "ok": true,
+        "error": "",
+        "error_type": "",
+        "timed_out": false,
+        "runtime_ms": 13,
+        "stdout": "",
+        "stderr": ""
+      }
+    ]
+  },
+  "post_fix_results": {
+    "passed": 1,
+    "total": 1,
+    "all_passed": true,
+    "note": "由 scripts/run_cases.py 调用 本仓库 executor/executor.py（与 CodeEval Lab 同源） 的 run_case 在独立子进程真实执行后生成",
+    "cases": [
+      {
+        "name": "adult_names_includes_18",
+        "args": [],
+        "expected": [
+          "Alice",
+          "Carol",
+          "Dave"
+        ],
+        "actual": [
+          "Alice",
+          "Carol",
+          "Dave"
+        ],
+        "passed": true,
+        "ok": true,
+        "error": "",
+        "error_type": "",
+        "timed_out": false,
+        "runtime_ms": 13,
+        "stdout": "",
+        "stderr": ""
+      }
+    ]
+  },
+  "manual_review": "人工审查确认：SQL 条件修改与题目语义一致；仍使用参数化插入避免注入；连接在函数内正确关闭；结果按姓名排序稳定。",
+  "final_evaluation": "修复有效。原始代码返回 ['Alice','Carol'] 漏掉 Dave（失败 1/1），修复代码返回 ['Alice','Carol','Dave']，1/1 通过。基于真实 sqlite3 查询结果比较得出。"
+}

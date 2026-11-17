@@ -1,0 +1,134 @@
+{
+  "id": "C07",
+  "category": "类型错误",
+  "title": "外部传入的字符串数量未转换为数字导致乘法类型错误",
+  "problem_description": "函数 calculate_total(price, quantity) 应返回总价。quantity 可能来自表单或配置，以字符串形式传入（如 \"3\"）。原始代码直接 price * quantity，在 price 为 float、quantity 为 str 时抛出 TypeError。",
+  "original_code": "def calculate_total(price, quantity):\n    return price * quantity\n",
+  "bug_cause": "未对外部输入做类型转换，float 与 str 执行乘法时抛出 TypeError: can't multiply sequence by non-int of type 'float'。",
+  "fix_requirement": "在计算前显式转换类型：float(price) * int(quantity)，使字符串数量与价格都能正确参与运算。",
+  "ai_repair_process": {
+    "performed_by": "本次由 AI 辅助完成定位与修复（CodeBuddy Code 执行分析与改写）",
+    "analysis_steps": [
+      "检查调用场景：quantity 可能为字符串，而 price 为浮点数。",
+      "推断 price * quantity 在 float 与 str 组合下必然 TypeError。",
+      "确认需要显式转换为数值类型，而非修改运算符号。"
+    ],
+    "fix_steps": [
+      "把返回表达式改为 float(price) * int(quantity)。",
+      "保持函数签名与返回数值类型不变。"
+    ],
+    "retest_steps": [
+      "通过真实独立子进程运行 quantity 为字符串与为整数两组用例。",
+      "比对实际返回值，确认修复前 TypeError、修复后返回 300.0 与 100.0。",
+      "确认修复代码全部通过。"
+    ],
+    "transcript_statement": "未保存模型对话原文，不提供虚构的对话记录。"
+  },
+  "fixed_code": "def calculate_total(price, quantity):\n    return float(price) * int(quantity)\n",
+  "test_cases": [
+    {
+      "name": "string_quantity",
+      "args": [
+        100.0,
+        "3"
+      ],
+      "expected": 300.0,
+      "timeout_ms": 2000
+    },
+    {
+      "name": "int_quantity",
+      "args": [
+        50.0,
+        2
+      ],
+      "expected": 100.0,
+      "timeout_ms": 2000
+    }
+  ],
+  "pre_fix_results": {
+    "passed": 1,
+    "total": 2,
+    "all_passed": false,
+    "note": "由 scripts/run_cases.py 调用 本仓库 executor/executor.py（与 CodeEval Lab 同源） 的 run_case 在独立子进程真实执行后生成",
+    "cases": [
+      {
+        "name": "string_quantity",
+        "args": [
+          100.0,
+          "3"
+        ],
+        "expected": 300.0,
+        "actual": null,
+        "passed": false,
+        "ok": false,
+        "error": "can't multiply sequence by non-int of type 'float'",
+        "error_type": "TypeError",
+        "timed_out": false,
+        "runtime_ms": 11,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "int_quantity",
+        "args": [
+          50.0,
+          2
+        ],
+        "expected": 100.0,
+        "actual": 100.0,
+        "passed": true,
+        "ok": true,
+        "error": "",
+        "error_type": "",
+        "timed_out": false,
+        "runtime_ms": 2,
+        "stdout": "",
+        "stderr": ""
+      }
+    ]
+  },
+  "post_fix_results": {
+    "passed": 2,
+    "total": 2,
+    "all_passed": true,
+    "note": "由 scripts/run_cases.py 调用 本仓库 executor/executor.py（与 CodeEval Lab 同源） 的 run_case 在独立子进程真实执行后生成",
+    "cases": [
+      {
+        "name": "string_quantity",
+        "args": [
+          100.0,
+          "3"
+        ],
+        "expected": 300.0,
+        "actual": 300.0,
+        "passed": true,
+        "ok": true,
+        "error": "",
+        "error_type": "",
+        "timed_out": false,
+        "runtime_ms": 2,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "int_quantity",
+        "args": [
+          50.0,
+          2
+        ],
+        "expected": 100.0,
+        "actual": 100.0,
+        "passed": true,
+        "ok": true,
+        "error": "",
+        "error_type": "",
+        "timed_out": false,
+        "runtime_ms": 2,
+        "stdout": "",
+        "stderr": ""
+      }
+    ]
+  },
+  "manual_review": "人工审查确认：显式 float/int 转换使类型意图清晰；对原本合法的数值输入无回归；返回仍为浮点数。属于边界明确的输入类型修复。",
+  "final_evaluation": "修复有效。原始代码在 string_quantity 用例抛出 TypeError（失败 1/2），修复代码 2/2 通过。体现了外部输入类型转换的重要性。"
+}

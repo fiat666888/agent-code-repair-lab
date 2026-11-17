@@ -1,0 +1,165 @@
+{
+  "id": "C04",
+  "category": "数据结构使用错误",
+  "title": "用列表当作字典统计词频",
+  "problem_description": "函数 count_frequencies(items) 应统计列表中每个元素出现次数并返回字典。原始代码错误地用列表（list）作为计数器容器，调用列表并不存在的 get 方法，且试图用字符串作为列表下标。",
+  "original_code": "def count_frequencies(items):\n    counts = []\n    for item in items:\n        counts[item] = counts.get(item, 0) + 1\n    return counts\n",
+  "bug_cause": "选择了错误的数据结构：列表不支持以字符串键读写，也没有 dict.get 方法。应使用字典（dict）以元素为键计数。",
+  "fix_requirement": "将 counts 初始化为空字典 {}，其余计数逻辑保持不变。",
+  "ai_repair_process": {
+    "performed_by": "本次由 AI 辅助完成定位与修复（CodeBuddy Code 执行分析与改写）",
+    "analysis_steps": [
+      "阅读代码发现容器初始化为列表 []，随后却按 key 方式访问并调用 .get()。",
+      "确认列表既无 get 方法也不能以字符串为下标，判定为数据结构选择错误。",
+      "明确统计词频的正确结构是字典，键为元素、值为计数。"
+    ],
+    "fix_steps": [
+      "把 counts = [] 改为 counts = {}。",
+      "保持循环体 get+1 的计数逻辑不变。"
+    ],
+    "retest_steps": [
+      "通过真实独立子进程运行含重复元素与空列表两组用例。",
+      "比对实际字典与 expected，确认修复前 AttributeError、修复后结果一致。",
+      "确认修复代码全部通过。"
+    ],
+    "transcript_statement": "未保存模型对话原文，不提供虚构的对话记录。"
+  },
+  "fixed_code": "def count_frequencies(items):\n    counts = {}\n    for item in items:\n        counts[item] = counts.get(item, 0) + 1\n    return counts\n",
+  "test_cases": [
+    {
+      "name": "with_duplicates",
+      "args": [
+        [
+          "a",
+          "b",
+          "a",
+          "c",
+          "b",
+          "a"
+        ]
+      ],
+      "expected": {
+        "a": 3,
+        "b": 2,
+        "c": 1
+      },
+      "timeout_ms": 2000
+    },
+    {
+      "name": "empty_list",
+      "args": [
+        []
+      ],
+      "expected": {},
+      "timeout_ms": 2000
+    }
+  ],
+  "pre_fix_results": {
+    "passed": 0,
+    "total": 2,
+    "all_passed": false,
+    "note": "由 scripts/run_cases.py 调用 本仓库 executor/executor.py（与 CodeEval Lab 同源） 的 run_case 在独立子进程真实执行后生成",
+    "cases": [
+      {
+        "name": "with_duplicates",
+        "args": [
+          [
+            "a",
+            "b",
+            "a",
+            "c",
+            "b",
+            "a"
+          ]
+        ],
+        "expected": {
+          "a": 3,
+          "b": 2,
+          "c": 1
+        },
+        "actual": null,
+        "passed": false,
+        "ok": false,
+        "error": "'list' object has no attribute 'get'",
+        "error_type": "AttributeError",
+        "timed_out": false,
+        "runtime_ms": 11,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "empty_list",
+        "args": [
+          []
+        ],
+        "expected": {},
+        "actual": [],
+        "passed": false,
+        "ok": true,
+        "error": "",
+        "error_type": "",
+        "timed_out": false,
+        "runtime_ms": 2,
+        "stdout": "",
+        "stderr": ""
+      }
+    ]
+  },
+  "post_fix_results": {
+    "passed": 2,
+    "total": 2,
+    "all_passed": true,
+    "note": "由 scripts/run_cases.py 调用 本仓库 executor/executor.py（与 CodeEval Lab 同源） 的 run_case 在独立子进程真实执行后生成",
+    "cases": [
+      {
+        "name": "with_duplicates",
+        "args": [
+          [
+            "a",
+            "b",
+            "a",
+            "c",
+            "b",
+            "a"
+          ]
+        ],
+        "expected": {
+          "a": 3,
+          "b": 2,
+          "c": 1
+        },
+        "actual": {
+          "a": 3,
+          "b": 2,
+          "c": 1
+        },
+        "passed": true,
+        "ok": true,
+        "error": "",
+        "error_type": "",
+        "timed_out": false,
+        "runtime_ms": 2,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "empty_list",
+        "args": [
+          []
+        ],
+        "expected": {},
+        "actual": {},
+        "passed": true,
+        "ok": true,
+        "error": "",
+        "error_type": "",
+        "timed_out": false,
+        "runtime_ms": 2,
+        "stdout": "",
+        "stderr": ""
+      }
+    ]
+  },
+  "manual_review": "人工审查确认：仅替换容器类型，逻辑与返回类型符合题目；键为元素的字典语义正确；未引入额外依赖。属于最小修复。",
+  "final_evaluation": "修复有效。原始代码在 with_duplicates 用例抛出 AttributeError（失败 1/2），修复代码 2/2 通过。凸显容器类型选择对算法正确性的影响。"
+}

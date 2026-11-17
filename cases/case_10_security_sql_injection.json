@@ -1,0 +1,184 @@
+{
+  "id": "C10",
+  "category": "安全问题",
+  "title": "SQL 注入：字符串拼接查询改为参数化查询并校验输入",
+  "problem_description": "函数 login(username) 在 sqlite3 内存用户表中按用户名查密码。原始代码用字符串拼接构造 SQL，攻击者输入 ' OR '1'='1 可绕过条件读取全部用户密码。需改为参数化查询并加入用户名白名单校验，测试必须能区分修复前后。",
+  "original_code": "import sqlite3\n\n\ndef login(username):\n    conn = sqlite3.connect(':memory:')\n    conn.execute('CREATE TABLE users (username TEXT, password TEXT)')\n    conn.executemany('INSERT INTO users VALUES (?, ?)', [('alice', 's3cret-A'), ('bob', 'p4ss-B')])\n    sql = \"SELECT password FROM users WHERE username = '\" + username + \"'\"\n    rows = conn.execute(sql).fetchall()\n    conn.close()\n    return [r[0] for r in rows]\n",
+  "bug_cause": "使用字符串拼接把不可信输入直接嵌入 SQL 语句，输入中的单引号改变了查询结构，形成 SQL 注入，可读取任意甚至全部用户数据。",
+  "fix_requirement": "改用参数化查询 SELECT ... WHERE username = ? 并传入 (username,)；同时用正则白名单限制用户名只允许字母、数字、下划线且长度 1-32，非法输入返回空列表。",
+  "ai_repair_process": {
+    "performed_by": "本次由 AI 辅助完成定位与修复（CodeBuddy Code 执行分析与改写）",
+    "analysis_steps": [
+      "识别 sql 由字符串拼接构造，用户输入中的引号可改变语句结构。",
+      "推演注入输入 ' OR '1'='1 使 WHERE 恒真，返回全部密码；注释型输入 alice' -- 也能绕过。",
+      "确定两层防御：输入白名单校验 + 参数化查询。"
+    ],
+    "fix_steps": [
+      "引入 re 模块，用 re.fullmatch(r'[A-Za-z0-9_]{1,32}', username) 做白名单校验并拒绝非字符串。",
+      "把查询改为参数化形式 execute('... username = ?', (username,))。",
+      "非法输入时关闭连接并返回 []。"
+    ],
+    "retest_steps": [
+      "通过真实独立子进程运行合法登录、OR 注入、注释注入三组用例。",
+      "比对实际返回密码列表：注入用例修复前应泄露数据、修复后为 []。",
+      "确认合法登录仍返回正确密码且修复代码全部通过。"
+    ],
+    "transcript_statement": "未保存模型对话原文，不提供虚构的对话记录。"
+  },
+  "fixed_code": "import re\nimport sqlite3\n\n\ndef login(username):\n    conn = sqlite3.connect(':memory:')\n    conn.execute('CREATE TABLE users (username TEXT, password TEXT)')\n    conn.executemany('INSERT INTO users VALUES (?, ?)', [('alice', 's3cret-A'), ('bob', 'p4ss-B')])\n    if not isinstance(username, str) or not re.fullmatch(r'[A-Za-z0-9_]{1,32}', username):\n        conn.close()\n        return []\n    rows = conn.execute('SELECT password FROM users WHERE username = ?', (username,)).fetchall()\n    conn.close()\n    return [r[0] for r in rows]\n",
+  "test_cases": [
+    {
+      "name": "valid_login",
+      "args": [
+        "alice"
+      ],
+      "expected": [
+        "s3cret-A"
+      ],
+      "timeout_ms": 2000
+    },
+    {
+      "name": "or_injection",
+      "args": [
+        "' OR '1'='1"
+      ],
+      "expected": [],
+      "timeout_ms": 2000
+    },
+    {
+      "name": "comment_injection",
+      "args": [
+        "alice' --"
+      ],
+      "expected": [],
+      "timeout_ms": 2000
+    }
+  ],
+  "pre_fix_results": {
+    "passed": 1,
+    "total": 3,
+    "all_passed": false,
+    "note": "由 scripts/run_cases.py 调用 本仓库 executor/executor.py（与 CodeEval Lab 同源） 的 run_case 在独立子进程真实执行后生成",
+    "cases": [
+      {
+        "name": "valid_login",
+        "args": [
+          "alice"
+        ],
+        "expected": [
+          "s3cret-A"
+        ],
+        "actual": [
+          "s3cret-A"
+        ],
+        "passed": true,
+        "ok": true,
+        "error": "",
+        "error_type": "",
+        "timed_out": false,
+        "runtime_ms": 14,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "or_injection",
+        "args": [
+          "' OR '1'='1"
+        ],
+        "expected": [],
+        "actual": [
+          "s3cret-A",
+          "p4ss-B"
+        ],
+        "passed": false,
+        "ok": true,
+        "error": "",
+        "error_type": "",
+        "timed_out": false,
+        "runtime_ms": 13,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "comment_injection",
+        "args": [
+          "alice' --"
+        ],
+        "expected": [],
+        "actual": [
+          "s3cret-A"
+        ],
+        "passed": false,
+        "ok": true,
+        "error": "",
+        "error_type": "",
+        "timed_out": false,
+        "runtime_ms": 12,
+        "stdout": "",
+        "stderr": ""
+      }
+    ]
+  },
+  "post_fix_results": {
+    "passed": 3,
+    "total": 3,
+    "all_passed": true,
+    "note": "由 scripts/run_cases.py 调用 本仓库 executor/executor.py（与 CodeEval Lab 同源） 的 run_case 在独立子进程真实执行后生成",
+    "cases": [
+      {
+        "name": "valid_login",
+        "args": [
+          "alice"
+        ],
+        "expected": [
+          "s3cret-A"
+        ],
+        "actual": [
+          "s3cret-A"
+        ],
+        "passed": true,
+        "ok": true,
+        "error": "",
+        "error_type": "",
+        "timed_out": false,
+        "runtime_ms": 12,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "or_injection",
+        "args": [
+          "' OR '1'='1"
+        ],
+        "expected": [],
+        "actual": [],
+        "passed": true,
+        "ok": true,
+        "error": "",
+        "error_type": "",
+        "timed_out": false,
+        "runtime_ms": 12,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "name": "comment_injection",
+        "args": [
+          "alice' --"
+        ],
+        "expected": [],
+        "actual": [],
+        "passed": true,
+        "ok": true,
+        "error": "",
+        "error_type": "",
+        "timed_out": false,
+        "runtime_ms": 12,
+        "stdout": "",
+        "stderr": ""
+      }
+    ]
+  },
+  "manual_review": "人工审查确认：参数化查询从根本上隔离了数据与 SQL 结构；正则白名单进一步缩小攻击面；合法用户名路径未受影响；连接在两分支均正确关闭。属可运行的真实安全修复。",
+  "final_evaluation": "修复有效。原始代码在两个注入用例上泄露密码（失败 2/3），修复代码 3/3 通过，注入输入均返回 []。真实展示了 SQL 注入危害与参数化防御。"
+}
